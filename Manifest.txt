@@ -9,4 +9,9 @@ lib/backs3.rb
 lib/backs3/backs3.rb
 lib/backs3/backup.rb
 lib/backs3/restore.rb
+lib/backs3/version.rb
+spec/spec.opts
+spec/spec_helper.rb
+spec/backs3/backup_spec.rb
+spec/backs3/restore_spec.rb
 tasks/rspec.rake
