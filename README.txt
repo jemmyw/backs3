@@ -1,10 +1,10 @@
 = Backs3
 
-* FIX (url)
+* http://github.com/jemmyw/backs3
 
 == DESCRIPTION:
 
-FIX (describe your package)
+A simple backup and restore program for S3
 
 == FEATURES/PROBLEMS:
 
@@ -12,21 +12,24 @@ FIX (describe your package)
 
 == SYNOPSIS:
 
-  FIX (code sample of usage)
+  backs3 -c s3.conf test
+  res3 -c s3.conf available => [12345, 54321]
+  res3 -c s3.conf restore 12345
 
 == REQUIREMENTS:
 
-* FIX (list of requirements)
+* ActiveSupport
+* AWS/S3
 
 == INSTALL:
 
-* FIX (sudo gem install, anything else)
+* sudo gem install jemmyw-backs3
 
 == LICENSE:
 
 (The MIT License)
 
-Copyright (c) 2009 FIX
+Copyright (c) 2009 Jeremy Wells / Boost Limited
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
