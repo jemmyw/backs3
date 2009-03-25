@@ -5,8 +5,8 @@ EMAIL = "jeremy@boost.co.nz"
 DESCRIPTION = "S3 backup and restore program"
 GEM_NAME = 'backs3' # what ppl will type to install your gem
 RUBYFORGE_PROJECT = 'backs3' # The unix name for your project
-HOMEPATH = "http://#{RUBYFORGE_PROJECT}.rubyforge.org"
-DOWNLOAD_PATH = "http://rubyforge.org/projects/#{RUBYFORGE_PROJECT}"
+HOMEPATH = "http://github.com/jemmyw/backs3"
+DOWNLOAD_PATH = "http://github.com/jemmyw/backs3"
 
 @config_file = "~/.rubyforge/user-config.yml"
 @config = nil

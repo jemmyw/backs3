@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.txt"]
   s.files = ["History.txt", "Manifest.txt", "README.txt", "Rakefile", "example.conf", "bin/backs3", "bin/res3", "lib/backs3.rb", "lib/backs3/backs3.rb", "lib/backs3/backup.rb", "lib/backs3/restore.rb", "lib/backs3/version.rb", "spec/spec.opts", "spec/spec_helper.rb", "spec/backs3/backup_spec.rb", "spec/backs3/restore_spec.rb", "tasks/rspec.rake"]
   s.has_rdoc = true
-  s.homepage = %q{http://backs3.rubyforge.org}
+  s.homepage = %q{http://github.com/jemmyw/backs3}
   s.rdoc_options = ["--main", "README.txt"]
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{backs3}
