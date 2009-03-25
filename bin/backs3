@@ -1,0 +1,83 @@
+#!/usr/bin/env ruby
+
+begin
+  require 'rubygems'
+  require 'backs3/backup'
+rescue LoadError => e
+  require 'lib/backs3/backup'
+end
+
+require 'active_support'
+require 'getoptlong'
+
+option_parser = GetoptLong.new(
+  ['--help', '-h', GetoptLong::NO_ARGUMENT],
+  ['--config', '-c', GetoptLong::REQUIRED_ARGUMENT],
+  ['--exclude', GetoptLong::REQUIRED_ARGUMENT],
+  ['--id', '-i', GetoptLong::REQUIRED_ARGUMENT],
+  ['--key', '-k', GetoptLong::REQUIRED_ARGUMENT],
+  ['--bucket', '-b', GetoptLong::REQUIRED_ARGUMENT],
+  ['--prefix', '-p', GetoptLong::REQUIRED_ARGUMENT],
+  ['--full', '-f', GetoptLong::REQUIRED_ARGUMENT],
+  ['--force-full', GetoptLong::NO_ARGUMENT]
+)
+
+$options = {}
+
+def usage(message = nil)
+  $stderr.puts message unless message.blank?
+
+  name = $0.split('/').last
+  $stderr.puts <<"ENDUSAGE"
+  #{name} [options] <directory>
+  --help        -h
+  --config      -c      Configuration file
+  --id          -i      AWS Access Key ID
+  --key         -k      AWS Secret Key
+  --bucket      -b      AWS Bucket name
+  --full=d      -f d    Number of days between full backups (default: 7)
+  --force-full          Force a full backup
+  --prefix      -p
+  --exclude="regex" Exclude files based on regex
+
+ENDUSAGE
+
+  $stderr.puts "Current configuration:"
+  $options.each do |key, value|
+    $stderr.puts "  #{key}:    \t#{value}"
+  end
+
+  exit!
+end #usage
+
+begin
+  option_parser.each do |opt, arg|
+    $options[opt.gsub(/^-*/, '')] = (arg || true)
+  end
+
+  usage if $options['help']
+  $options['folder'] = ARGV[0] unless ARGV[0].blank?
+
+  raise Exception.new("Invalid configuration file #{$options['config']}") unless $options['config'].blank? || File.exists?($options['config'])
+  $options['config'] ||= '/etc/backs3.conf'
+
+  if File.exists?($options['config'])
+    begin
+      puts "Reading configuration from #{$options['config']}"
+      config = YAML::load_file($options['config'])
+      $options = config.merge($options)
+    rescue
+      raise Exception.new("Invalid configuration file #{$options['config']}")
+    end
+  end
+
+  raise Exception.new("You must specify a directory to backup") if $options['folder'].blank?
+  raise Exception.new("You must specify a bucket") if $options['bucket'].blank?
+  raise Exception.new("You must specify an AWS ID") if $options['id'].blank?
+  raise Exception.new("You must specify an AWS Secret Key") if $options['key'].blank?
+rescue Exception => e
+  usage(e.to_s)
+end
+
+backs3 = Backs3::Backup.new($options)
+backs3.backup

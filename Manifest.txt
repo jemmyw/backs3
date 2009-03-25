@@ -1,0 +1,12 @@
+History.txt
+Manifest.txt
+README.txt
+Rakefile
+example.conf
+bin/backs3
+bin/res3
+lib/backs3.rb
+lib/backs3/backs3.rb
+lib/backs3/backup.rb
+lib/backs3/restore.rb
+tasks/rspec.rake

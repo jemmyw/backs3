@@ -1,0 +1,84 @@
+#!/usr/bin/env ruby
+
+begin
+  require 'rubygems'
+  require 'backs3/restore'
+rescue LoadError => e
+  require 'lib/backs3/restore'
+end
+
+require 'active_support'
+require 'getoptlong'
+
+option_parser = GetoptLong.new(
+  ['--help', '-h', GetoptLong::NO_ARGUMENT],
+  ['--config', '-c', GetoptLong::REQUIRED_ARGUMENT],
+  ['--id', '-i', GetoptLong::REQUIRED_ARGUMENT],
+  ['--key', '-k', GetoptLong::REQUIRED_ARGUMENT],
+  ['--bucket', '-b', GetoptLong::REQUIRED_ARGUMENT],
+  ['--prefix', '-p', GetoptLong::REQUIRED_ARGUMENT]
+)
+
+$options = {}
+
+def usage(message = nil)
+  $stderr.puts message unless message.blank?
+
+  name = $0.split('/').last
+  $stderr.puts <<"ENDUSAGE"
+  #{name} [options] <directory> <command> [command options]
+  Commands:
+    #{Backs3::Restore.commands.join(", ")}
+
+  --help        -h
+  --config      -c      Configuration file
+  --id          -i      AWS Access Key ID
+  --key         -k      AWS Secret Key
+  --bucket      -b      AWS Bucket name
+  --prefix      -p
+
+ENDUSAGE
+
+  $stderr.puts "Current configuration:"
+  $options.each do |key, value|
+    $stderr.puts "  #{key}:    \t#{value}"
+  end
+
+  exit!
+end #usage
+
+begin
+  option_parser.each do |opt, arg|
+    $options[opt.gsub(/^-*/, '')] = (arg || true)
+  end
+
+  usage if $options['help']
+
+  raise Exception.new("Invalid configuration file #{$options['config']}") unless $options['config'].blank? || File.exists?($options['config'])
+  $options['config'] ||= '/etc/backs3.conf'
+
+  if File.exists?($options['config'])
+    begin
+      puts "Reading configuration from #{$options['config']}"
+      config = YAML::load_file($options['config'])
+      $options = config.merge($options)
+    rescue
+      raise Exception.new("Invalid configuration file #{$options['config']}")
+    end
+  end
+
+  args = ARGV
+  $options['folder'] = args.shift if $options['folder'].blank?
+  $command = args.shift
+
+  raise Exception.new("You must specify a directory to restore from") if $options['folder'].blank?
+  raise Exception.new("You must specify a bucket") if $options['bucket'].blank?
+  raise Exception.new("You must specify an AWS ID") if $options['id'].blank?
+  raise Exception.new("You must specify an AWS Secret Key") if $options['key'].blank?
+  raise Exception.new("You must specify a valid command") unless Backs3::Restore.commands.include?($command)
+rescue Exception => e
+  usage(e.to_s)
+end
+
+res3 = Backs3::Restore.new($options)
+res3.send($command, *args)
