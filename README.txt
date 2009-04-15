@@ -29,7 +29,7 @@ A simple backup and restore program for S3
 
 (The MIT License)
 
-Copyright (c) 2009 Jeremy Wells / Boost Limited
+Copyright (c) 2009 Jeremy Wells / Boost Limited (http://www.boost.co.nz)
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
