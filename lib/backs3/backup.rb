@@ -33,14 +33,18 @@ module Backs3
     def files_to_backup
       @files_to_backup ||= begin
         Dir.glob(File.join(@options['folder'], '**', '**')).select do |file|
-          if @options['exclude'].blank? || file !~ /#{@options['exclude']}/
-            if full_backup || File.mtime(file).to_i > last_backup
-              true
+          if File.directory?(file)
+            false
+          else
+            if @options['exclude'].blank? || file !~ /#{@options['exclude']}/
+              if full_backup || File.mtime(file).to_i > last_backup
+                true
+              else
+                false
+              end
             else
               false
             end
-          else
-            false
           end
         end
       end
