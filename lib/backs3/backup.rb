@@ -33,7 +33,7 @@ module Backs3
     def files_to_backup
       @files_to_backup ||= begin
         Dir.glob(File.join(@options['folder'], '**', '**')).select do |file|
-          if File.directory?(file)
+          if File.directory?(file) || File.symlink?(file)
             false
           else
             if @options['exclude'].blank? || file !~ /#{@options['exclude']}/
