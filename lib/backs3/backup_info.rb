@@ -23,10 +23,10 @@ module Backs3
     
       object = S3Object.find(aws_filename, @options['bucket']) rescue nil
     
-      if object.nil? || object.metadata[:md5sum] != @md5sum
+      if object.nil? || object.metadata[:md5sum] != self.md5sum
         S3Object.store(aws_filename, open(@path), @options['bucket'])
         object = S3Object.find(aws_filename, @options['bucket'])
-        object.metadata[:md5sum] = @md5sum
+        object.metadata[:md5sum] = self.md5sum
         object.save
       end
     end
