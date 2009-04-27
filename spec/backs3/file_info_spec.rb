@@ -10,6 +10,9 @@ describe Backs3::FileInfo do
     @backup = mock(:backup)
     @path = 'test/file_1'
 
+    @storage = mock(:storage)
+    @backup.stub!(:storage).and_return(@storage)
+
     @backup.stub!(:options).and_return(@options)
   end
 
@@ -44,39 +47,13 @@ describe Backs3::FileInfo do
 
   describe 'backup' do
     before(:each) do
-      @s3 = mock(:s3)
       @backup.stub!(:key).and_return('12345')
     end
 
-    it 'should do nothing if the file is on S3 and the same as the current file' do
-      S3Object.should_receive(:find).with('12345/test/file_1', 'test_bucket').and_return(@s3)
-      S3Object.should_not_receive(:store)
-      @s3.should_receive(:metadata).and_return({:md5sum => 'abcde'})
+    it 'should store the file' do
+      @storage.should_receive(:store).with('12345/test/file_1', anything())
 
       @info = FileInfo.new(@backup, @path)
-      @info.should_receive(:md5sum).and_return('abcde')
-      @info.backup
-    end
-
-    it 'should upload the file if it is not on S3' do
-      S3Object.should_receive(:find).with('12345/test/file_1', 'test_bucket').and_return(nil, @s3)
-      S3Object.should_receive(:store)
-      @s3.should_receive(:metadata).and_return({:md5sum => 'abcde'})
-      @s3.should_receive(:save).and_return(true)
-
-      @info = FileInfo.new(@backup, @path)
-      @info.should_receive(:md5sum).and_return('abcde')
-      @info.backup
-    end
-
-    it 'should upload the file if it is on S3 but the md5sum is different' do
-      S3Object.should_receive(:find).with('12345/test/file_1', 'test_bucket').and_return(@s3, @s3)
-      S3Object.should_receive(:store)
-      @s3.should_receive(:metadata).twice.and_return({:md5sum => 'abcd'})
-      @s3.should_receive(:save).and_return(true)
-
-      @info = FileInfo.new(@backup, @path)
-      @info.should_receive(:md5sum).twice.and_return('abcde')
       @info.backup
     end
   end

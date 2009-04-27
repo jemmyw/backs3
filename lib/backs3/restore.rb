@@ -13,7 +13,6 @@ module Backs3
     def initialize(options = {})
       @options = options
       @options['prefix'] ||= ''
-      establish_connection
       @backups = load_backup_info.sort{|a,b| a.date <=> b.date }
     end
 
@@ -49,20 +48,17 @@ module Backs3
     end
 
     def ls(backup)
-      Bucket.objects(@options['bucket'], :prefix => @options['prefix'] + backup.to_s).each do |object|
-        puts object.key
+      storage.list(backup).each do |name|
+        puts name
       end
     end
 
-    def cat(backup, file)
-      backup_key = @options['prefix'] + backup.to_s
-      object = S3Object.find(File.join(backup_key, file), @options['bucket']) rescue nil
-      
-      if object.nil?
-        puts "Cannot find file #{file}"
-      else
-        puts object.value(:reload)
-      end
+    def cat(date, name)
+      backup = @backups.detect{|b| b.date.to_s == date.to_s}
+      raise "Cannot find backup #{date}" unless backup
+      file = backup.all_files.detect{|f| f.path == name}
+      raise "Cannot find file #{name}" unless file
+      puts storage.read(File.join(backup.date.to_s, name))
     end
 
     def restore(date, file = nil)

@@ -3,24 +3,34 @@
 require 'rubygems' rescue nil
 require 'aws/s3'
 require 'active_support'
+require 'active_support/dependencies'
 require 'digest/md5'
 require 'time'
-require File.join(File.dirname(__FILE__), 'backup')
-require File.join(File.dirname(__FILE__), 'file_info')
+
+unless ActiveSupport::Dependencies.load_paths.include?(File.expand_path(File.dirname(__FILE__) + '/..'))
+  ActiveSupport::Dependencies.load_paths << File.expand_path(File.dirname(__FILE__) + '/..')
+end
 
 module Backs3
-  include AWS::S3
-  
+  autoload :Backup, 'backs3/backup'
+  autoload :FileInfo, 'backs3/file_info'
+
+  def self.included(base) #:nodoc:
+    base.class_eval do
+      def lookup_storage(name, options)
+        storage_class = Backs3::Storage.const_get(name.to_s.camelize)
+        storage_class.new(options)
+      end
+    end
+  end
+
+  def storage
+    @storage ||= self.class.lookup_storage(@options['storage'] || :aws, @options['storage_options'])
+  end
+
   def logger
     logger_output = @options['logger'] || $stdout
     @logger ||= Logger.new(logger_output)
-  end
-
-  def establish_connection
-    AWS::S3::Base.establish_connection!(
-      :access_key_id => @options['id'],
-      :secret_access_key => @options['key']
-    )
   end
 
   def md5(filename)
@@ -28,15 +38,14 @@ module Backs3
   end
   
   def save_backup_info(info)
-    S3Object.store(@options['prefix'] + 's3backup', YAML.dump(info), @options['bucket'])
+    storage.store('s3backup', YAML.dump(info))
     logger.info "Backup info has been stored"
   end
 
   def load_backup_info
     @backups ||= begin
-      backup_info_file = S3Object.find(@options['prefix'] + 's3backup', @options['bucket'])
-      backup_info_data = backup_info_file.value(:reload)
-      YAML.load(backup_info_data) || {}      
+      backup_info_file = storage.read('s3backup') || nil
+      YAML.load(backup_info_file) || []
     rescue Exception => e
       puts e.to_s
       []

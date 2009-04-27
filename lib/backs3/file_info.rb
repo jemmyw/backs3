@@ -1,7 +1,6 @@
 module Backs3
   class FileInfo
     include Backs3
-    include AWS::S3
 
     attr_reader :backup_info
     attr_reader :path
@@ -14,6 +13,10 @@ module Backs3
       @options = @backup_info.options
     end
 
+    def storage
+      @backup_info.storage
+    end
+
     def ==(other_obj)
       other_obj.backup_info == self.backup_info && other_obj.path == self.path
     end
@@ -24,26 +27,17 @@ module Backs3
 
     def backup
       logger.info "Backing up #{@path} to #{aws_filename}"
-
-      object = get_object
-
-      if object.nil? || object.metadata[:md5sum] != self.md5sum
-        S3Object.store(aws_filename, open(@path), @options['bucket'])
-        object = S3Object.find(aws_filename, @options['bucket'])
-        object.metadata[:md5sum] = self.md5sum
-        object.save
-      end
+      storage.store(aws_filename, open(@path))
     end
 
     def restore(location = '/tmp')
       restore_path = File.join(location, @path)
-      object = get_object
-
-      if object
+      
+      if storage.exists?(aws_filename)
         $stdout.write "Restoring file #{@path}"
         FileUtils.mkdir_p File.dirname(restore_path)
         File.open(restore_path, 'w') do |f|
-          object.value do |segment|
+          storage.read(aws_filename) do |segment|
             $stdout.write "."
             f.write segment
           end
@@ -52,12 +46,6 @@ module Backs3
       else
         logger.info "Could not restore #{@path} because file data could not be found!"
       end
-    end
-
-    private
-
-    def get_object
-      S3Object.find(aws_filename, @options['bucket']) rescue nil
     end
   end
 end

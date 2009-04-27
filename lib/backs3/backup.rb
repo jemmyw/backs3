@@ -5,8 +5,7 @@ module Backs3
     attr_reader :date, :files, :full, :options, :last_backup, :last_full_backup, :done
 
     def initialize(previous, options)
-      @backups = previous.sort{|a,b| a.date <=> b.date } if backups
-
+      @backups = previous.sort{|a,b| a.date <=> b.date } if previous
       @last_backup = self.backups.last
       @last_full_backup = self.backups.reverse.detect{|b| b.full == true }
 
