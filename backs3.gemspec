@@ -1,6 +1,3 @@
-(in /Users/jeremy/dev/backs3)
-# -*- encoding: utf-8 -*-
-
 Gem::Specification.new do |s|
   s.name = %q{backs3}
   s.version = "0.0.4"
