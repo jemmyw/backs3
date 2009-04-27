@@ -26,7 +26,7 @@ module Backs3
 
   def md5(filename)
     if $has_md5
-      `md5 #{filename}`
+      `md5 -q #{filename}`
     else
       Digest::MD5.hexdigest(filename)
     end

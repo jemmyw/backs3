@@ -81,4 +81,9 @@ rescue Exception => e
 end
 
 res3 = Backs3::Restore.new($options)
-res3.send($command, *args)
+
+begin
+  res3.send($command, *args)
+rescue Exception => e
+  puts e
+end

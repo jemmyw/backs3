@@ -7,39 +7,57 @@ module Backs3
     include AWS::S3
 
     def self.commands
-      %w(ls available restore cat)
+      %w(ls available restore cat info)
     end
 
     def initialize(options = {})
       @options = options
       @options['prefix'] ||= ''
       establish_connection
+      @backups = load_backup_info
     end
 
-    def available(file = nil)
-      if file.nil?
-        puts "Backups available: #{backup_info['backups'].join(", ")}"
+    def available(backup_key = nil)
+      if backup_key.nil?
+        puts "Backups available: #{@backups.map{|b| b.date}.join(", ")}"
       else
-        info = backup_info['backups'].collect do |backup|
-          backup_key = @options['prefix'] + backup.to_s
-          object = S3Object.find(File.join(backup_key, file), @options['bucket']) rescue nil
-
-          if object
-            {
-              :backup => backup,
-              :md5 => object.metadata[:md5sum]
-            }
-          else
-            nil
-          end
-
-        end.compact
-
-        puts "Backup information for #{file}:"
-        info.each do |i|
-          puts "\tBackup #{i[:backup]}: #{i[:md5]}"
+        unless backup = @backups.detect{|b| b.date.to_s == backup_key.to_s }
+          raise "No backup #{backup_key} available"
         end
 
+        backups = [backup]
+
+        if !backup.full && backup.last_full_backup
+          @backups.each do |b|
+            backups << b if b.date >= backup.last_full_backup.date && b.date < backup.date
+          end
+        end
+        
+        files = backups.collect{|b| b.files}.flatten
+        files.reject!{|f| !f.backup_info.respond_to?(:date) }
+        
+        files.reject! do |f|
+          files.detect{|of| of.path == f.path && of.backup_info.date > f.backup_info.date }
+        end
+
+        puts "Backup information for #{backup.date}"
+        files.each do |file|
+          puts "\tFile: #{file.path}, backed up #{Time.at(file.backup_info.date).to_s}"
+        end
+      end
+    end
+
+    def info(file)
+      files = @backups.collect{|b| b.files}.flatten.select{|f| f.path == file}
+
+      if files.empty?
+        puts "No information found for file #{file}"
+      else
+        puts "Backup information for file #{file}"
+
+        files.each do |f|
+          puts "\tBacked up #{Time.at(f.backup_info.date).to_s} in #{f.backup_info.date} with md5sum #{f.md5sum}"
+        end
       end
     end
 

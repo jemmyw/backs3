@@ -3,19 +3,19 @@ module Backs3
     include Backs3
     include AWS::S3
   
-    attr_reader :backup
+    attr_reader :backup_info
     attr_reader :path
     attr_reader :md5sum
   
     def initialize(backup, path)
-      @backup = backup
+      @backup_info = backup
       @path = path
       @md5sum = md5(@path)
-      @options = backup.options
+      @options = @backup_info.options
     end
   
     def aws_filename
-      File.join(@backup.key, path)
+      File.join(@backup_info.key, path)
     end
 
     def backup
