@@ -26,7 +26,7 @@ describe Backs3::Restore do
     ]
 
     @backup_mock1.stub!(:files).and_return(@files_mock1)
-    @backup_mock2.stub!(:files).and_return(@files_mock1)
+    @backup_mock2.stub!(:files).and_return(@files_mock2)
 
     @backup_array = [@backup_mock1, @backup_mock2]
     @restore.stub!(:load_backup_info).and_return(@backup_array)
@@ -47,18 +47,18 @@ describe Backs3::Restore do
 
     it 'should list all of the available files in a full backup' do
       @restore.should_receive(:puts).once.with('Backup information for 12345')
-      @restore.should_receive(:puts).once.with("\tFile: test/file_1, backed up: #{Time.at(12345).to_s}")
-      @restore.should_receive(:puts).once.with("\tFile: test/file_2, backed up: #{Time.at(12345).to_s}")
-      @restore.should_receive(:puts).once.with("\tFile: test/file_3, backed up: #{Time.at(12345).to_s}")
+      @restore.should_receive(:puts).once.with("\tFile: test/file_1, backed up #{Time.at(12345).to_s}")
+      @restore.should_receive(:puts).once.with("\tFile: test/file_2, backed up #{Time.at(12345).to_s}")
+      @restore.should_receive(:puts).once.with("\tFile: test/file_3, backed up #{Time.at(12345).to_s}")
 
       @restore.available(12345)
     end
 
     it 'should list all the files from the last full backup for a partial backup' do
       @restore.should_receive(:puts).once.with('Backup information for 54321')
-      @restore.should_receive(:puts).once.with("\tFile: test/file_1, backed up: #{Time.at(54321).to_s}")
-      @restore.should_receive(:puts).once.with("\tFile: test/file_2, backed up: #{Time.at(12345).to_s}")
-      @restore.should_receive(:puts).once.with("\tFile: test/file_3, backed up: #{Time.at(12345).to_s}")
+      @restore.should_receive(:puts).once.with("\tFile: test/file_1, backed up #{Time.at(54321).to_s}")
+      @restore.should_receive(:puts).once.with("\tFile: test/file_2, backed up #{Time.at(12345).to_s}")
+      @restore.should_receive(:puts).once.with("\tFile: test/file_3, backed up #{Time.at(12345).to_s}")
 
       @restore.available(54321)
     end

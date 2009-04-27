@@ -14,7 +14,7 @@ module Backs3
       @options = options
       @options['prefix'] ||= ''
       establish_connection
-      @backups = load_backup_info
+      @backups = load_backup_info.sort{|a,b| a.date <=> b.date }
     end
 
     def available(backup_key = nil)
@@ -36,8 +36,8 @@ module Backs3
         files = backups.collect{|b| b.files}.flatten
         files.reject!{|f| !f.backup_info.respond_to?(:date) }
         
-        files.reject! do |f|
-          files.detect{|of| of.path == f.path && of.backup_info.date > f.backup_info.date }
+        files.reject! do |first_file|
+          files.detect{|second_file| first_file.path == second_file.path && second_file.backup_info.date > first_file.backup_info.date }
         end
 
         puts "Backup information for #{backup.date}"
