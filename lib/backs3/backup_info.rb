@@ -127,6 +127,13 @@ module Backs3
       logger.info "Backup finished!"
     end
 
+    def restore(location = '/tmp', file = nil)
+      files = file.nil? ? all_files : all_files.select{|f| f.path == file}
+      files.each do |file|
+        file.restore(location)
+      end
+    end
+
     def to_yaml_properties
       instance_variables.reject{|i| %w(@backups).include?(i) }.sort
     end

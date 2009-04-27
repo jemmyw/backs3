@@ -68,14 +68,7 @@ module Backs3
     def restore(date, file = nil)
       backup = @backups.detect{|b| b.date.to_s == date.to_s}
       raise 'Cannot find backup %s' % date if backup.nil?
-
-      files = file.nil? ?
-        backup.all_files :
-        backup.all_files.select{|f| f.path == file}
-
-      files.each do |file|
-        file.restore('/tmp')
-      end
+      backup.restore('/tmp', file)
     end
   end
 end
