@@ -61,6 +61,30 @@ describe Backs3::BackupInfo do
     end
   end
 
+  describe 'all_files' do
+    it 'should just be the list of files in the backup if the backup is full' do
+      backup = BackupInfo.new(@previous, @options)
+      backup.full.should == true
+      backup.all_files.should == backup.files
+    end
+
+    it 'should include files from the last full backup if partial' do
+      last_full = BackupInfo.new([], @options)
+      last_full.stub!(:full).and_return(true)
+
+      current = BackupInfo.new([last_full], @options)
+      current.stub!(:full).and_return(false)
+
+      file_1 = mock(:file_info, :path => 'test/file_1', :backup_info => last_full)
+      file_2 = mock(:file_info, :path => 'test/file_2', :backup_info => current)
+
+      last_full.stub!(:files).and_return([file_1])
+      current.stub!(:files).and_return([file_2])
+
+      current.all_files.should == [file_1, file_2]
+    end
+  end
+
   describe '@full' do
     it 'should set full if there is no previous backup specified' do
       BackupInfo.new(@previous, @options).full.should == true

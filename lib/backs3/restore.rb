@@ -25,20 +25,7 @@ module Backs3
           raise "No backup #{backup_key} available"
         end
 
-        backups = [backup]
-
-        if !backup.full && backup.last_full_backup
-          @backups.each do |b|
-            backups << b if b.date >= backup.last_full_backup.date && b.date < backup.date
-          end
-        end
-        
-        files = backups.collect{|b| b.files}.flatten
-        files.reject!{|f| !f.backup_info.respond_to?(:date) }
-        
-        files.reject! do |first_file|
-          files.detect{|second_file| first_file.path == second_file.path && second_file.backup_info.date > first_file.backup_info.date }
-        end
+        files = backup.all_files
 
         puts "Backup information for #{backup.date}"
         files.each do |file|
@@ -78,7 +65,12 @@ module Backs3
       end
     end
 
-    def restore(backup, file = nil)
+    def restore(date, file = nil)
+      backup = @backups.detect{|b| b.date.to_s == key.to_s}
+
+      
+
+
       backup_key = @options['prefix'] + backup.to_s
       objects = []
 

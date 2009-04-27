@@ -50,6 +50,21 @@ module Backs3
       @full = @options['force-full'] || first_backup? || @date - @last_full_backup.date > (@options['full'] || 7).days
     end
 
+    def all_files
+      if !full && @last_full_backup
+        backups = @backups.select{|b| b.date >= @last_full_backup.date && b.date <= self.date }
+        backups << self
+
+        rfiles = backups.collect{|b| b.files}.flatten
+        rfiles.reject! do |first_file|
+          rfiles.detect{|second_file| second_file.path == first_file.path && second_file.backup_info.date > first_file.backup_info.date }
+        end
+        rfiles
+      else
+        self.files
+      end
+    end
+
     def key
       @options['prefix'] + @date.to_s
     end

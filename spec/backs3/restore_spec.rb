@@ -25,8 +25,15 @@ describe Backs3::Restore do
       @file_mock4
     ]
 
+    @files_mock3 = [
+      @file_mock4, @file_mock2, @file_mock3
+    ]
+
     @backup_mock1.stub!(:files).and_return(@files_mock1)
     @backup_mock2.stub!(:files).and_return(@files_mock2)
+
+    @backup_mock1.stub!(:all_files).and_return(@files_mock1)
+    @backup_mock2.stub!(:all_files).and_return(@files_mock3)
 
     @backup_array = [@backup_mock1, @backup_mock2]
     @restore.stub!(:load_backup_info).and_return(@backup_array)
