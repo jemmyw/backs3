@@ -86,4 +86,5 @@ begin
   res3.send($command, *args)
 rescue Exception => e
   puts e
+  puts e.backtrace.join("\n")
 end

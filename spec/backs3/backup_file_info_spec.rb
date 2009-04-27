@@ -8,13 +8,35 @@ describe Backs3::BackupFileInfo do
     @backup = mock(:backup)
     @path = 'test/file_1'
 
-    @backup.should_receive(:options).and_return(@options)
+    @backup.stub!(:options).and_return(@options)
   end
 
   describe 'aws_filename' do
     it 'should return the full filename to be put on aws' do
       @backup.should_receive(:key).and_return('12345')
       BackupFileInfo.new(@backup, @path).aws_filename.should == '12345/test/file_1'
+    end
+  end
+
+  describe '==' do
+    it 'should be equal if files have same path and same backup info' do
+      file_1 = BackupFileInfo.new(@backup, @path)
+      file_2 = BackupFileInfo.new(@backup, @path)
+      file_1.should == file_2
+    end
+
+    it 'should be different if files have different path' do
+      file_1 = BackupFileInfo.new(@backup, @path)
+      file_2 = BackupFileInfo.new(@backup, @path + 'diff')
+      file_1.should_not == file_2
+    end
+
+    it 'should be different if files have different backup' do
+      @backup2 = mock(:backup)
+      @backup2.stub!(:options).and_return(@options)
+      file_1 = BackupFileInfo.new(@backup, @path)
+      file_2 = BackupFileInfo.new(@backup2, @path)
+      file_1.should_not == file_2
     end
   end
 

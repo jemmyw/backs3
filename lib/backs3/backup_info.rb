@@ -13,7 +13,11 @@ module Backs3
       @md5sum = md5(@path)
       @options = @backup_info.options
     end
-  
+
+    def ==(other_obj)
+      other_obj.backup_info == self.backup_info && other_obj.path == self.path
+    end
+
     def aws_filename
       File.join(@backup_info.key, path)
     end
@@ -21,7 +25,7 @@ module Backs3
     def backup
       logger.info "Backing up #{@path} to #{aws_filename}"
     
-      object = S3Object.find(aws_filename, @options['bucket']) rescue nil
+      object = get_object
     
       if object.nil? || object.metadata[:md5sum] != self.md5sum
         S3Object.store(aws_filename, open(@path), @options['bucket'])
@@ -30,6 +34,31 @@ module Backs3
         object.save
       end
     end
+
+    def restore(location = '/tmp')
+      restore_path = File.join(location, @path)
+      object = get_object
+
+      if object
+        $stdout.write "Restoring file #{@path}"
+        FileUtils.mkdir_p File.dirname(restore_path)
+        File.open(restore_path, 'w') do |f|
+          object.value do |segment|
+            $stdout.write "."
+            f.write segment
+          end
+        end
+        $stdout.write "\n"
+      else
+        logger.info "Could not restore #{@path} because file data could not be found!"
+      end
+    end
+
+    private
+
+    def get_object
+      S3Object.find(aws_filename, @options['bucket']) rescue nil
+    end
   end
 
   class BackupInfo
@@ -37,12 +66,11 @@ module Backs3
     
     attr_reader :date, :files, :full, :options, :last_backup, :last_full_backup, :done
   
-    def initialize(backups, options)
-      backups ||= []
-      @backups = backups.sort{|a,b| a.date <=> b.date }
+    def initialize(previous, options)
+      @backups = previous.sort{|a,b| a.date <=> b.date } if backups
 
-      @last_backup = @backups.last
-      @last_full_backup = @backups.reverse.detect{|b| b.full == true }
+      @last_backup = self.backups.last
+      @last_full_backup = self.backups.reverse.detect{|b| b.full == true }
 
       @date = Time.now.to_i
       @options = options
@@ -50,12 +78,22 @@ module Backs3
       @full = @options['force-full'] || first_backup? || @date - @last_full_backup.date > (@options['full'] || 7).days
     end
 
+    def ==(other_obj)
+      other_obj.date == self.date && other_obj.full == self.full
+    end
+
+    def backups
+      @backups ||= load_backup_info.sort{|a,b| a.date <=> b.date } || []
+    end
+
+    # All of the files for a backup. If the backup is partial this function will
+    # find the files from the last full backup to this one.
     def all_files
       if !full && @last_full_backup
-        backups = @backups.select{|b| b.date >= @last_full_backup.date && b.date <= self.date }
-        backups << self
+        backups = self.backups.select{|b| b.date >= @last_full_backup.date && b.date <= self.date }
+        backups << self unless backups.include?(self)
 
-        rfiles = backups.collect{|b| b.files}.flatten
+        rfiles = backups.collect{|b| b.files}.flatten.uniq
         rfiles.reject! do |first_file|
           rfiles.detect{|second_file| second_file.path == first_file.path && second_file.backup_info.date > first_file.backup_info.date }
         end

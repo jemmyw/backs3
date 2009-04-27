@@ -68,31 +68,12 @@ module Backs3
     def restore(date, file = nil)
       backup = @backups.detect{|b| b.date.to_s == key.to_s}
 
-      
+      files = file.nil? ?
+        backup.all_files :
+        backup.all_files.select{|f| f.path == file}
 
-
-      backup_key = @options['prefix'] + backup.to_s
-      objects = []
-
-      if file.nil?
-        objects = Bucket.objects(@options['bucket'], :prefix => @options['prefix'] + backup.to_s)
-      else
-        objects << S3Object.find(File.join(backup_key, file), @options['bucket']) rescue nil
-      end
-
-      objects.compact!
-
-      objects.each do |object|
-        $stdout.write "Restoring file #{object.key} to /tmp/#{object.key}"
-        filename = "/tmp/#{object.key}"
-        FileUtils.mkdir_p File.dirname(filename)
-        File.open(filename, 'w') do |f|
-          object.value do |segment|
-            $stdout.write "."
-            f.write segment
-          end
-        end
-        $stdout.write "\n"
+      files.each do |file|
+        file.restore('/tmp')
       end
     end
   end
