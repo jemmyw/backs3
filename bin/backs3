@@ -2,9 +2,9 @@
 
 begin
   require 'rubygems'
-  require 'backs3/backup'
+  require 'backs3/backs3'
 rescue LoadError => e
-  require 'lib/backs3/backup'
+  require 'lib/backs3/backs3'
 end
 
 require 'active_support'
@@ -79,5 +79,22 @@ rescue Exception => e
   usage(e.to_s)
 end
 
-backs3 = Backs3::Backup.new($options)
-backs3.backup
+class Backs3::BackupCmd
+  include Backs3
+
+  def initialize(options = {})
+    @options = options
+    @options['prefix'] ||= ''
+
+    establish_connection
+
+    @backups = load_backup_info
+    @backup = Backup.new(@backups, @options)
+  end
+
+  def backup
+    @backup.backup
+  end
+end
+
+Backs3::BackupCmd.new($options).backup

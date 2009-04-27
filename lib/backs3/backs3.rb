@@ -5,9 +5,8 @@ require 'aws/s3'
 require 'active_support'
 require 'digest/md5'
 require 'time'
-require File.join(File.dirname(__FILE__), 'backup_info')
-
-$has_md5 = !(`which md5`).blank?
+require File.join(File.dirname(__FILE__), 'backup')
+require File.join(File.dirname(__FILE__), 'file_info')
 
 module Backs3
   include AWS::S3
@@ -25,11 +24,7 @@ module Backs3
   end
 
   def md5(filename)
-    if $has_md5
-      `md5 -q #{filename}`
-    else
-      Digest::MD5.hexdigest(filename)
-    end
+    Digest::MD5.hexdigest(filename)
   end
   
   def save_backup_info(info)
