@@ -23,6 +23,14 @@ module Backs3
       def validate_options
 
       end
+
+      def read_data(data)
+        if data.respond_to?(:read)
+          yield data.read
+        else
+          yield data
+        end
+      end
     end
   end
 end

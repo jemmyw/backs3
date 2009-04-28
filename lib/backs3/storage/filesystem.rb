@@ -7,7 +7,9 @@ module Backs3
         FileUtils.mkdir_p(File.dirname(whole_path(name))) rescue nil
         
         File.open(whole_path(name), 'w') do |file|
-          file.write value.respond_to?(:read) ? value.read : value
+          read_data(value) do |data|
+            file.write data
+          end
         end
       end
 

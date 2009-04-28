@@ -5,11 +5,14 @@ class Backs3::Storage::Test < Backs3::Storage::Base
   end
 
   def store(name, value)
-    if value.respond_to?(:read)
-      @store[name] = value.read
-    else
-      @store[name] = value
+    td = StringIO.new('')
+
+    read_data(value) do |data|
+      td.write(data)
     end
+
+    td.rewind
+    @store[name] = td.read
   end
 
   def read(name)
