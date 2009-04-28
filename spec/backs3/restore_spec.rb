@@ -3,11 +3,7 @@ require 'backs3/restore'
 
 describe Backs3::Restore do
   before(:each) do
-    AWS::S3::Base.stub!(:establish_connection!)
-    @bucket = 'test_bucket'
-    @restore = Restore.new('bucket' => @bucket)
-
-    @file_1 = mock(:s3object, :metadata => {})
+    @restore = Restore.new('storage' => 'test', 'folder' => 'test')
 
     @backup_mock1 = mock(:backup_info, :date => 12345, :full => true)
     @backup_mock2 = mock(:backup_info, :date => 54321, :last_full_backup => @backup_mock1, :full => false)
@@ -57,7 +53,6 @@ describe Backs3::Restore do
       @restore.should_receive(:puts).once.with("\tFile: test/file_1, backed up #{Time.at(12345).to_s}")
       @restore.should_receive(:puts).once.with("\tFile: test/file_2, backed up #{Time.at(12345).to_s}")
       @restore.should_receive(:puts).once.with("\tFile: test/file_3, backed up #{Time.at(12345).to_s}")
-
       @restore.available(12345)
     end
 

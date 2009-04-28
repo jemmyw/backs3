@@ -4,7 +4,7 @@ require 'backs3/backup'
 
 describe Backs3::Backup do
   before(:each) do
-    @options = {'folder' => 'test', @logger => StringIO.new('')}
+    @options = {'folder' => 'test', 'logger' => StringIO.new(''), 'storage' => 'test'}
     @previous = []
   end
   

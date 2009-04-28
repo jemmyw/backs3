@@ -1,6 +1,7 @@
 module Backs3
   class Backup
     include Backs3
+    include Storage
 
     attr_reader :date, :files, :full, :options, :last_backup, :last_full_backup, :done
 

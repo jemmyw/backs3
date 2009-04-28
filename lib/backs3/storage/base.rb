@@ -6,30 +6,18 @@ module Backs3
 
     class Base
       def initialize(options = {})
-        @options = (options || {}).stringify_keys
+        @options = (options || {}).symbolize_keys
         validate_options
       end
 
-      def store(name, value)
-        raise "Not implemented"
+      def method_missing(symbol, *args)
+        if %w(store read delete exists? list).include?(symbol.to_s)
+          raise "Not implemented"
+        else
+          super
+        end
       end
-
-      def read(name)
-        raise "Not implemented"
-      end
-
-      def delete(name)
-        raise "Not implemented"
-      end
-
-      def exists?(name)
-        raise "Not implemented"
-      end
-
-      def list(path = nil)
-        raise "Not implemented"
-      end
-
+      
       protected
 
       def validate_options

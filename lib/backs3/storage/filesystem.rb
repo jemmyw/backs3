@@ -7,7 +7,7 @@ module Backs3
         FileUtils.mkdir_p(File.dirname(whole_path(name))) rescue nil
         
         File.open(whole_path(name), 'w') do |file|
-          file.write value
+          file.write value.respond_to?(:read) ? value.read : value
         end
       end
 
@@ -35,7 +35,7 @@ module Backs3
       private
 
       def whole_path(name)
-        File.join(@options['path'], name)
+        File.join(@options[:path], name)
       end
     end
   end

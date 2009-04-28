@@ -4,7 +4,7 @@ require 'fileutils'
 module Backs3
   class Restore
     include Backs3
-    include AWS::S3
+    include Storage
 
     def self.commands
       %w(ls available restore cat info)
