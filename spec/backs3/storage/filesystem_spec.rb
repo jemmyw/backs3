@@ -21,4 +21,11 @@ describe Backs3::Storage::Filesystem do
       @store.store('file_1', StringIO.new('test data'))
     end
   end
+
+  describe 'read' do
+    it 'should read from a file' do
+      File.should_receive(:read).with('test/file_2').and_return('test data')
+      @store.read('file_2').should == 'test data'
+    end
+  end
 end

@@ -7,22 +7,23 @@ module Backs3
         super(options)
 
         AWS::S3::Base.establish_connection!(
-          :access_key_id => @options['id'],
-          :secret_access_key => @options['key']
+          :access_key_id => @options[:id],
+          :secret_access_key => @options[:key]
         )
       end
 
       def validate_options
-        raise "Requires id" unless @options.has_key?('id')
-        raise "Requires key" unless @options.has_key('key')
+        raise "Requires id" unless @options.has_key?(:id)
+        raise "Requires key" unless @options.has_key?(:key)
+        @options[:prefix] ||= ''
       end
 
       def store(name, value)
-        S3Object.store(@options['prefix'] + name, value, @options['bucket'])
+        S3Object.store(@options[:prefix] + name, value, @options[:bucket])
       end
 
       def read(name)
-        object = S3Object.find(@options['prefix'] + name, @options['bucket'])
+        object = S3Object.find(@options[:prefix] + name, @options[:bucket])
 
         if block_given?
           object.value do |segment|
@@ -38,14 +39,14 @@ module Backs3
       end
 
       def exists?(name)
-        file = S3Object.find(@options['prefix'] + name, @options['bucket']) rescue nil
+        file = S3Object.find(@options[:prefix] + name, @options[:bucket]) rescue nil
         !file.nil?
       end
 
       def list(path = nil)
         keys = []
 
-        Bucket.objects(@options['bucket'], :prefix => @options['prefix'] + path.to_s).each do |object|
+        Bucket.objects(@options[:bucket], :prefix => @options[:prefix] + path.to_s).each do |object|
           keys << object.key
         end
 
