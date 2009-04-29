@@ -38,6 +38,10 @@ module Backs3
 
       end
 
+      def flush
+        
+      end
+
       def exists?(name)
         file = S3Object.find(@options[:prefix] + name, @options[:bucket]) rescue nil
         !file.nil?

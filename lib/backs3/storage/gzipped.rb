@@ -2,7 +2,7 @@ require 'open4'
 
 module Backs3::Storage
   class Gzipped < Base
-    include Backs3
+    include Backs3::Storage
 
     def initialize(options = {})
       super(options)
@@ -54,6 +54,10 @@ module Backs3::Storage
 
     def delete(name)
       storage.delete(name + '.gz')
+    end
+
+    def flush
+      storage.flush
     end
   end
 end

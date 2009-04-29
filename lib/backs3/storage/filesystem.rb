@@ -34,6 +34,10 @@ module Backs3
         File.delete(whole_path(name))
       end
 
+      def flush
+
+      end
+
       private
 
       def whole_path(name)

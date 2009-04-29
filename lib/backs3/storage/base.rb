@@ -11,7 +11,7 @@ module Backs3
       end
 
       def method_missing(symbol, *args)
-        if %w(store read delete exists? list).include?(symbol.to_s)
+        if %w(store read delete exists? list flush).include?(symbol.to_s)
           raise "Not implemented"
         else
           super

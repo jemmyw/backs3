@@ -60,6 +60,7 @@ module Backs3
       end
 
       update_backup_info
+      storage.flush
 
       @done = true
       logger.info "Backup finished!"
