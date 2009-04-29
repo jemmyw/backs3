@@ -1,3 +1,5 @@
+require 'open4'
+
 module Backs3::Storage
   class Gzipped < Base
     include Backs3
@@ -7,26 +9,42 @@ module Backs3::Storage
     end
 
     def store(name, value)
-      # create temporary gzipped version
-      File.open('/tmp/togz', 'w'){|f| f.write value}
-      `gzip /tmp/togz`
-      storage.store(name + '.gz', '/tmp/togz.gz')
-      File.delete('/tmp/togz.gz')
+      pid, stdin, stdout, stderr = Open4::popen4('gzip')
+      
+      read_data(value) do |data|
+        stdin.write data
+      end
+      
+      stdin.close
+      
+      ignored, status = Process::waitpid2 pid
+
+      if status.exitstatus == 0
+        storage.store(name + '.zip', stdout)
+      else
+        raise 'GZIP error'
+      end
     end
 
     def read(name)
-      File.open('/tmp/togz.gz', 'w') do |f|
-        storage.read(name + '.gz') do |segment|
-          f.write segment
-        end
+      pid, stdin, stdout, stderr = Open4::popen('gunzip', '--stdout')
+
+      storage.read(name + '.gz') do |segment|
+        stdin.write segment
       end
 
-      `gunzip /tmp/togz.gz`
+      stdin.close
 
-      if block_given?
-        yield File.read('/tmp/togz')
+      ignored, status = Process::waitpid2 pid
+
+      if status.exitstatus == 0
+        if block_given?
+          yield stdout.read
+        else
+          stdout.read
+        end
       else
-        File.read('/tmp/togz')
+        raise 'GUNZIP error'
       end
     end
 
