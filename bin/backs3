@@ -85,11 +85,7 @@ class Backs3::BackupCmd
   def initialize(options = {})
     @options = options
     @options['prefix'] ||= ''
-
-    establish_connection
-
-    @backups = load_backup_info
-    @backup = Backup.new(@backups, @options)
+    @backup = Backup.new(@options)
   end
 
   def backup
